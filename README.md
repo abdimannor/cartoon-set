@@ -16,4 +16,4 @@ Adobe Illustrator
 
 ## License
 
-MIT
+Released under the MIT License. See [LICENSE](LICENSE).
