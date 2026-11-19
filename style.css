@@ -54,3 +54,79 @@
     padding-block: var(--space-m) var(--space-l);
   }
 }
+
+@layer components {
+  /* Exhibition title on the wall */
+  header {
+    display: grid;
+    gap: var(--space-s);
+    padding-block: var(--space-l) var(--space-m);
+    border-block-end: 1px solid color-mix(in oklab, var(--ink) 25%, transparent);
+  }
+  .eyebrow { font-size: var(--step--1); font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--red); }
+  h1 { font-size: var(--step-3); letter-spacing: -0.035em; }
+  .lead { max-inline-size: 30ch; font: italic var(--step-1)/1.35 var(--serif); color: var(--muted); }
+
+  /* Framed prints */
+  .card { display: grid; gap: var(--space-m); }
+  .frame {
+    position: relative;
+    padding: clamp(1rem, 2.5vw, 2rem);
+    background: var(--mat);
+    border: clamp(0.5rem, 0.9vw, 0.8rem) solid var(--frame);
+    box-shadow:
+      inset 0 0 0 1px #e8e2d6,
+      0 2px 3px rgb(0 0 0 / 0.25),
+      0 2.5rem 3rem -1.5rem rgb(60 40 10 / 0.45);
+  }
+  .frame::before {
+    content: "";
+    position: absolute;
+    inset: -3rem 10% auto;
+    block-size: 3rem;
+    background: radial-gradient(50% 100% at 50% 100%, rgb(255 248 230 / 0.6), transparent);
+    pointer-events: none;
+  }
+
+  @media (width >= 56rem) {
+    .card:nth-child(2) { margin-block-start: var(--space-l); }
+    .card:nth-child(3) { margin-block-start: calc(var(--space-l) / 3); }
+  }
+
+  /* Museum wall labels */
+  figcaption {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.35rem 0.9rem;
+    max-inline-size: 34ch;
+    padding: 1rem 1.1rem;
+    background: var(--mat);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.15);
+    font-size: var(--step--1);
+    line-height: 1.5;
+  }
+  .num { grid-row: span 3; font: 400 var(--step-1)/1 var(--serif); color: var(--red); }
+  figcaption h2 { font-size: var(--step-1); }
+  figcaption p { color: var(--muted); }
+  code { justify-self: start; font: 0.72rem/1 var(--mono); letter-spacing: 0.04em; color: var(--muted); }
+  code::before { content: "↳ "; }
+
+  footer {
+    display: grid;
+    gap: 0.5rem;
+    padding-block: var(--space-m) var(--space-l);
+    border-block-start: 1px solid color-mix(in oklab, var(--ink) 25%, transparent);
+    color: var(--muted);
+  }
+  footer p { max-inline-size: 62ch; }
+}
+
+@layer motion {
+  @media (prefers-reduced-motion: no-preference) {
+    .frame { transition: translate 0.5s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.5s; }
+    .card:hover .frame {
+      translate: 0 -0.4rem;
+      box-shadow: inset 0 0 0 1px #e8e2d6, 0 2px 3px rgb(0 0 0 / 0.2), 0 3.5rem 3.5rem -1.5rem rgb(60 40 10 / 0.5);
+    }
+  }
+}
