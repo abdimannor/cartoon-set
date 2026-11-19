@@ -2,6 +2,8 @@
 
 Three flat vector characters drawn in Adobe Illustrator. The source files are the `.ai` documents in the repository root; the PNGs in `previews/` are rendered from them so the work can be seen on GitHub without opening Illustrator.
 
+Gallery page: https://abdimannor.github.io/cartoon-set/ (goes live once the Pages workflow has run on `master`).
+
 ## The characters
 
 | Cartoon 1 | Cartoon 2 | Cartoon 3 |
