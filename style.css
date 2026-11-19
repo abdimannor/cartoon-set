@@ -1,0 +1,56 @@
+@layer reset, tokens, base, layout, components, motion;
+
+@layer reset {
+  *, *::before, *::after { box-sizing: border-box; }
+  body, h1, h2, p, figure { margin: 0; }
+  img { display: block; max-inline-size: 100%; block-size: auto; }
+}
+
+@layer tokens {
+  :root {
+    --wall: #e9e1d3;
+    --wall-shade: #ddd2bf;
+    --ink: #161616;
+    --muted: #5b5750;
+    --red: #b8231e;
+    --mat: #fdfbf7;
+    --frame: #1b1a18;
+
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    --step--1: clamp(0.75rem, 0.72rem + 0.12vw, 0.82rem);
+    --step-0: clamp(0.95rem, 0.92rem + 0.15vw, 1.05rem);
+    --step-1: clamp(1.15rem, 1.05rem + 0.4vw, 1.4rem);
+    --step-3: clamp(3rem, 1.5rem + 7.5vw, 8.5rem);
+
+    --space-s: clamp(0.75rem, 0.6rem + 0.5vw, 1rem);
+    --space-m: clamp(1.5rem, 1rem + 2vw, 3rem);
+    --space-l: clamp(3rem, 2rem + 5vw, 7rem);
+    --gutter: clamp(1.25rem, 5vw, 5rem);
+  }
+}
+
+@layer base {
+  body {
+    background:
+      radial-gradient(120% 70% at 50% 0%, #f3ede2, transparent 70%),
+      var(--wall);
+    color: var(--ink);
+    font: 400 var(--step-0)/1.55 var(--sans);
+  }
+  h1, h2 { font-family: var(--serif); font-weight: 400; line-height: 1; text-wrap: balance; }
+  a { color: inherit; text-underline-offset: 0.2em; }
+}
+
+@layer layout {
+  header, main, footer { inline-size: min(84rem, 100% - 2 * var(--gutter)); margin-inline: auto; }
+  main {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    gap: var(--space-l) var(--space-m);
+    align-items: start;
+    padding-block: var(--space-m) var(--space-l);
+  }
+}
