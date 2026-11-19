@@ -8,13 +8,16 @@
 
 @layer tokens {
   :root {
-    --wall: #e9e1d3;
-    --wall-shade: #ddd2bf;
+    --wall: #24413f;
+    --wall-light: #2f5552;
+    --on-wall: #eef4f3;
+    --on-wall-muted: #b7cbc8;
+    --on-wall-accent: #f4a597;
     --ink: #161616;
-    --muted: #5b5750;
+    --muted: #55585a;
     --red: #b8231e;
-    --mat: #fdfbf7;
-    --frame: #1b1a18;
+    --mat: #fff;
+    --frame: #111213;
 
     --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
@@ -35,9 +38,9 @@
 @layer base {
   body {
     background:
-      radial-gradient(120% 70% at 50% 0%, #f3ede2, transparent 70%),
+      radial-gradient(120% 70% at 50% 0%, var(--wall-light), transparent 70%),
       var(--wall);
-    color: var(--ink);
+    color: var(--on-wall);
     font: 400 var(--step-0)/1.55 var(--sans);
   }
   h1, h2 { font-family: var(--serif); font-weight: 400; line-height: 1; text-wrap: balance; }
@@ -61,11 +64,11 @@
     display: grid;
     gap: var(--space-s);
     padding-block: var(--space-l) var(--space-m);
-    border-block-end: 1px solid color-mix(in oklab, var(--ink) 25%, transparent);
+    border-block-end: 1px solid color-mix(in oklab, var(--on-wall) 30%, transparent);
   }
-  .eyebrow { font-size: var(--step--1); font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--red); }
+  .eyebrow { font-size: var(--step--1); font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--on-wall-accent); }
   h1 { font-size: var(--step-3); letter-spacing: -0.035em; }
-  .lead { max-inline-size: 30ch; font: italic var(--step-1)/1.35 var(--serif); color: var(--muted); }
+  .lead { max-inline-size: 30ch; font: italic var(--step-1)/1.35 var(--serif); color: var(--on-wall-muted); }
 
   /* Framed prints */
   .card { display: grid; gap: var(--space-m); }
@@ -75,16 +78,16 @@
     background: var(--mat);
     border: clamp(0.5rem, 0.9vw, 0.8rem) solid var(--frame);
     box-shadow:
-      inset 0 0 0 1px #e8e2d6,
-      0 2px 3px rgb(0 0 0 / 0.25),
-      0 2.5rem 3rem -1.5rem rgb(60 40 10 / 0.45);
+      inset 0 0 0 1px #e4e6e6,
+      0 2px 3px rgb(0 0 0 / 0.35),
+      0 2.5rem 3rem -1.5rem rgb(0 10 10 / 0.6);
   }
   .frame::before {
     content: "";
     position: absolute;
     inset: -3rem 10% auto;
     block-size: 3rem;
-    background: radial-gradient(50% 100% at 50% 100%, rgb(255 248 230 / 0.6), transparent);
+    background: radial-gradient(50% 100% at 50% 100%, rgb(220 245 240 / 0.18), transparent);
     pointer-events: none;
   }
 
@@ -101,7 +104,8 @@
     max-inline-size: 34ch;
     padding: 1rem 1.1rem;
     background: var(--mat);
-    box-shadow: 0 1px 2px rgb(0 0 0 / 0.15);
+    color: var(--ink);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
     font-size: var(--step--1);
     line-height: 1.5;
   }
@@ -115,9 +119,9 @@
     display: grid;
     gap: 0.5rem;
     padding-block: var(--space-s) var(--space-m);
-    border-block-start: 1px solid color-mix(in oklab, var(--ink) 25%, transparent);
+    border-block-start: 1px solid color-mix(in oklab, var(--on-wall) 30%, transparent);
     font-size: var(--step--1);
-    color: var(--muted);
+    color: var(--on-wall-muted);
   }
 }
 
@@ -126,7 +130,7 @@
     .frame { transition: translate 0.5s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.5s; }
     .card:hover .frame {
       translate: 0 -0.4rem;
-      box-shadow: inset 0 0 0 1px #e8e2d6, 0 2px 3px rgb(0 0 0 / 0.2), 0 3.5rem 3.5rem -1.5rem rgb(60 40 10 / 0.5);
+      box-shadow: inset 0 0 0 1px #e4e6e6, 0 2px 3px rgb(0 0 0 / 0.3), 0 3.5rem 3.5rem -1.5rem rgb(0 10 10 / 0.65);
     }
   }
 }
