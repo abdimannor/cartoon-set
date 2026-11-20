@@ -48,7 +48,7 @@
 }
 
 @layer layout {
-  header, main, footer { inline-size: min(84rem, 100% - 2 * var(--gutter)); margin-inline: auto; }
+  header, main { inline-size: min(84rem, 100% - 2 * var(--gutter)); margin-inline: auto; }
   main {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
@@ -115,14 +115,6 @@
   code { justify-self: start; font: 0.72rem/1 var(--mono); letter-spacing: 0.04em; color: var(--muted); }
   code::before { content: "↳ "; }
 
-  footer {
-    display: grid;
-    gap: 0.5rem;
-    padding-block: var(--space-s) var(--space-m);
-    border-block-start: 1px solid color-mix(in oklab, var(--on-wall) 30%, transparent);
-    font-size: var(--step--1);
-    color: var(--on-wall-muted);
-  }
 }
 
 @layer motion {
@@ -193,7 +185,7 @@
       radial-gradient(60rem 40rem at var(--lx) var(--ly), rgb(190 240 228 / 0.08), transparent 70%);
     mix-blend-mode: screen;
   }
-  header, main, footer { position: relative; z-index: 1; }
+  header, main { position: relative; z-index: 1; }
 }
 
 @layer motion {
