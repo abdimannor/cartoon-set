@@ -51,8 +51,115 @@ export const cluster = (colors, t = THRESHOLD) => {
     const g = groups.find((g) => distance(g.hex, c.hex) < t);
     if (g) { g.n += c.n; g.members.push(c.hex); } else groups.push({ hex: c.hex, n: c.n, members: [c.hex] });
   }
-  return groups.map((g) => ({ ...g, share: g.n / total }));
+  return groups.sort((a, b) => b.n - a.n).map((g) => ({ ...g, share: g.n / total }));
 };
 export const exact = (colors) => cluster(colors, 0);
 
 const pct = (share) => (share >= 0.1 ? `${Math.round(share * 100)}%` : `${(share * 100).toFixed(1)}%`);
+
+const el = (tag, props = {}, ...kids) => {
+  const node = Object.assign(document.createElement(tag), props);
+  node.append(...kids);
+  return node;
+};
+const slug = (name) => name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+
+// Downloads: built in the browser and handed over as Blobs, nothing leaves the page.
+export const formats = {
+  css: (name, list) => `/* ${name} palette */\n:root {\n${list.map((c, i) => `  --${slug(name)}-${i + 1}: ${c.hex}; /* ${pct(c.share)} */`).join("\n")}\n}\n`,
+  gpl: (name, list) => `GIMP Palette\nName: ${name}\nColumns: ${Math.min(list.length, 8)}\n#\n${list.map((c) => `${rgb(c.hex).map((v) => String(v).padStart(3)).join(" ")}\t${c.hex} ${pct(c.share)}`).join("\n")}\n`,
+  json: (name, list, mode) => JSON.stringify({ name, mode, colors: list.map(({ hex, share, members }) => ({ hex, share: +share.toFixed(4), members })) }, null, 2) + "\n",
+};
+const types = { css: "text/css", gpl: "text/plain", json: "application/json" };
+const download = (name, list, mode, kind) => {
+  const url = URL.createObjectURL(new Blob([formats[kind](name, list, mode)], { type: types[kind] }));
+  const a = el("a", { href: url, download: `${slug(name)}-${mode}.${kind}` });
+  document.body.append(a);
+  a.click();
+  a.remove();
+  queueMicrotask(() => URL.revokeObjectURL(url));
+};
+
+// One switch for every strip: merged inks by default, the raw list on request.
+let showExact = false;
+const strips = new Map();
+export const renderPalette = (target, colors, name) => {
+  strips.set(target, { colors, name });
+  const mode = showExact ? "exact" : "merged";
+  const list = showExact ? exact(colors) : cluster(colors);
+  const chips = list.map((c) => {
+    const b = el("button", { type: "button", className: "swatch" });
+    b.style.setProperty("--c", c.hex);
+    b.dataset.copy = c.hex;
+    b.innerHTML = `<span class="chip" aria-hidden="true"></span><span class="hex">${c.hex}</span> <span class="share">${pct(c.share)}</span>`;
+    const merged = c.members.length > 1 ? `, merges ${c.members.length} near-identical colours` : "";
+    b.setAttribute("aria-label", `Copy ${c.hex} ${pct(c.share)} of the colour operations${merged}`);
+    if (c.members.length > 1) b.title = c.members.join(" ");
+    return b;
+  });
+  if (!list.length) return target.replaceChildren();
+  const all = el("button", { type: "button", className: "swatch-all", textContent: "Copy all" });
+  all.dataset.copy = list.map((c) => c.hex).join(" ");
+  all.setAttribute("aria-label", `Copy all ${list.length} colours of ${name}`);
+  const toggle = el("button", { type: "button", className: "palette-exact", textContent: "Exact colours" });
+  toggle.setAttribute("aria-pressed", String(showExact));
+  toggle.dataset.exactToggle = "";
+  const tools = el("span", { className: "palette-tools" }, all, toggle,
+    ...["css", "gpl", "json"].map((kind) => {
+      const d = el("button", { type: "button", className: "palette-dl", textContent: { css: "CSS", gpl: "GIMP", json: "JSON" }[kind] });
+      d.dataset.download = kind;
+      d.setAttribute("aria-label", `Download ${name} palette as ${{ css: "CSS custom properties", gpl: "a GIMP .gpl palette", json: "JSON" }[kind]}`);
+      d.addEventListener("click", () => download(name, list, mode, kind));
+      return d;
+    }));
+  target.replaceChildren(...chips, tools);
+};
+document.addEventListener("click", (event) => {
+  if (!event.target.closest("[data-exact-toggle]")) return;
+  showExact = !showExact;
+  const focusIn = event.target.closest(".palette");
+  for (const [target, { colors, name }] of strips) renderPalette(target, colors, name);
+  focusIn?.querySelector("[data-exact-toggle]")?.focus();
+});
+
+// Colour story: the three palettes clustered together, so a shared ink lines up in one row.
+export const renderStory = (root, data, titles) => {
+  const files = Object.keys(data);
+  const totals = files.map((f) => data[f].reduce((sum, c) => sum + c.n, 0) || 1);
+  const pooled = files.flatMap((f, i) => data[f].map((c) => ({ ...c, f: i })));
+  const groups = [];
+  for (const c of pooled.sort((a, b) => b.n / totals[b.f] - a.n / totals[a.f])) {
+    const g = groups.find((g) => distance(g.hex, c.hex) < THRESHOLD);
+    const share = c.n / totals[c.f];
+    if (g) g.shares[c.f] += share; else groups.push({ hex: c.hex, shares: files.map((_, i) => (i === c.f ? share : 0)) });
+  }
+  const used = (g) => g.shares.filter(Boolean).length;
+  const bands = [[files.length, "In all three"], [2, "In two"], [1, "Only in one"]];
+
+  const stacks = el("div", { className: "story-stacks" });
+  stacks.setAttribute("aria-hidden", "true");
+  files.forEach((f, i) => {
+    const bar = el("div", { className: "story-bar" });
+    groups.filter((g) => g.shares[i]).sort((a, b) => b.shares[i] - a.shares[i]).forEach((g) => {
+      const seg = el("span");
+      seg.style.cssText = `--c:${g.hex};flex-grow:${g.shares[i]}`;
+      bar.append(seg);
+    });
+    stacks.append(el("div", { className: "story-row" }, el("span", { className: "story-name", textContent: titles[f] }), bar));
+  });
+
+  const table = el("table", { className: "story-table" });
+  table.innerHTML = `<caption class="visually-hidden">Share of each merged colour in the three illustrations</caption>
+    <thead><tr><th scope="col">Colour</th>${files.map((f) => `<th scope="col">${titles[f]}</th>`).join("")}</tr></thead>`;
+  for (const [count, label] of bands) {
+    const rows = groups.filter((g) => used(g) === count);
+    if (!rows.length) continue;
+    const body = el("tbody");
+    body.innerHTML = `<tr class="story-band"><th scope="rowgroup" colspan="${files.length + 1}">${label} <span>${rows.length}</span></th></tr>`
+      + rows.map((g) => `<tr><th scope="row"><span class="chip" style="--c:${g.hex}" aria-hidden="true"></span><span class="hex">${g.hex}</span></th>${
+        g.shares.map((s) => (s ? `<td><span class="story-cell" style="--c:${g.hex};--w:${Math.max(s * 100, 2).toFixed(1)}%"></span>${pct(s)}</td>` : `<td class="story-none"><span class="visually-hidden">not used</span></td>`)).join("")}</tr>`).join("");
+    table.append(body);
+  }
+  root.replaceChildren(stacks, el("div", { className: "story-scroll" }, table));
+};

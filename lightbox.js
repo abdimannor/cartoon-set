@@ -1,5 +1,7 @@
 // Lightbox: renders the original .ai artwork (PDF-compatible) as vectors with pdf.js,
 // re-rasterised at the current zoom so lines stay crisp. Wheel, pinch, drag and keys.
+import { renderPalette, renderStory } from "./previews/palette.js";
+
 const dialog = document.querySelector("#lightbox");
 const view = document.querySelector("#lb-view");
 const art = document.querySelector("#lb-art");
@@ -53,27 +55,6 @@ export const paletteOf = async (file) => {
 const status = document.querySelector("#palette-status");
 const lbPalette = document.querySelector("#lb-palette");
 let stored = {};
-const swatches = (target, colors, name) => {
-  target.replaceChildren(...colors.map((hex) => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "swatch";
-    b.style.setProperty("--c", hex);
-    b.dataset.copy = hex;
-    b.innerHTML = `<span class="chip" aria-hidden="true"></span><span class="hex">${hex}</span>`;
-    b.setAttribute("aria-label", `Copy ${hex}`);
-    return b;
-  }));
-  if (colors.length) {
-    const all = document.createElement("button");
-    all.type = "button";
-    all.className = "swatch-all";
-    all.dataset.copy = colors.join(" ");
-    all.textContent = "Copy all";
-    all.setAttribute("aria-label", `Copy all ${colors.length} colours of ${name}`);
-    target.append(all);
-  }
-};
 document.addEventListener("click", async (event) => {
   const b = event.target.closest("[data-copy]");
   if (!b) return;
@@ -86,11 +67,14 @@ document.addEventListener("click", async (event) => {
   b.classList.add("is-copied");
   setTimeout(() => b.classList.remove("is-copied"), 1200);
 });
+const titles = Object.fromEntries(items.map((b) => [b.dataset.art, b.dataset.title]));
 fetch("previews/palettes.json").then((r) => r.json()).then((data) => {
   stored = data;
   document.querySelectorAll("[data-palette]").forEach((el) => {
-    swatches(el, data[el.dataset.palette] || [], el.dataset.palette);
+    renderPalette(el, data[el.dataset.palette] || [], titles[el.dataset.palette] || el.dataset.palette);
   });
+  const story = document.querySelector("#story");
+  if (story) renderStory(story, data, titles);
 }).catch(() => {});
 
 const apply = () => {
@@ -163,7 +147,7 @@ const show = async (i) => {
   s.page = null;
   canvas.width = canvas.height = 0;
   preview.src = item.dataset.preview;
-  swatches(lbPalette, stored[item.dataset.art] || [], item.dataset.title);
+  renderPalette(lbPalette, stored[item.dataset.art] || [], item.dataset.title);
   await preview.decode().catch(() => {});
   fit();
   try {
@@ -172,7 +156,7 @@ const show = async (i) => {
     s.page = page;
     render();
     const colors = await paletteOf(item.dataset.art).catch(() => stored[item.dataset.art] || []);
-    if (items[s.i] === item) swatches(lbPalette, colors, item.dataset.title);
+    if (items[s.i] === item) renderPalette(lbPalette, colors, item.dataset.title);
   } catch {
     // The PNG preview stays visible if the vector file cannot load.
   }
