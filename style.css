@@ -117,6 +117,56 @@
 
 }
 
+/* Palette tools and the colour story */
+@layer components {
+  figcaption .palette { grid-column: 1 / -1; }
+  .share { color: var(--muted); }
+  .palette-tools { display: inline-flex; flex-wrap: wrap; gap: 0.35rem; }
+  .palette-exact, .palette-dl {
+    padding: 0.35em 0.7em;
+    border: 1px solid var(--ink);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--ink);
+    font: 700 0.72rem/1 var(--sans);
+    cursor: pointer;
+  }
+  .palette-exact[aria-pressed="true"] { background: var(--red); border-color: var(--red); color: #fff; }
+  .palette-dl::before { content: "\2193  "; }
+  .palette-exact:focus-visible, .palette-dl:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+  .lb-palette .share { color: var(--on-wall-muted); }
+  .lb-palette .palette-exact, .lb-palette .palette-dl { background: #0f1d1c; color: var(--on-wall); border-color: var(--on-wall-muted); }
+  .lb-palette .palette-exact[aria-pressed="true"] { background: var(--on-wall-accent); border-color: var(--on-wall-accent); color: #1b1b1b; }
+
+  .story {
+    inline-size: min(84rem, 100% - 2 * var(--gutter));
+    margin-inline: auto;
+    padding-block: var(--space-m) var(--space-l);
+    border-block-start: 1px solid color-mix(in oklab, var(--on-wall) 30%, transparent);
+    display: grid;
+    gap: var(--space-s);
+  }
+  .story h2 { font-size: clamp(2.2rem, 1.4rem + 3.5vw, 4.5rem); letter-spacing: -0.03em; }
+  .story-lead { max-inline-size: 46ch; font: italic var(--step-1)/1.35 var(--serif); color: var(--on-wall-muted); }
+  .story-body { display: grid; gap: var(--space-m); margin-block-start: var(--space-s); }
+  .story-stacks { display: grid; gap: 0.6rem; }
+  .story-row { display: grid; grid-template-columns: 7rem 1fr; align-items: center; gap: 1rem; }
+  .story-name { font: 400 var(--step-1)/1 var(--serif); }
+  .story-bar { display: flex; block-size: clamp(2.5rem, 5vw, 4rem); border: 2px solid var(--frame); background: var(--frame); gap: 2px; }
+  .story-bar span { background: var(--c); min-inline-size: 3px; }
+  .story-scroll { overflow-x: auto; }
+  .story-table { inline-size: 100%; min-inline-size: 34rem; border-collapse: collapse; font-size: var(--step--1); }
+  .story-table th, .story-table td { padding: 0.45rem 0.6rem; text-align: start; border-block-end: 1px solid color-mix(in oklab, var(--on-wall) 18%, transparent); }
+  .story-table thead th { font: 400 var(--step-1)/1 var(--serif); }
+  .story-table th[scope="row"] { display: flex; align-items: center; gap: 0.6rem; font: 0.8rem/1 var(--mono); font-weight: 400; }
+  .story-table .chip { inline-size: 1.8em; block-size: 1.8em; box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.35); }
+  .story-band th { padding-block-start: 1.4rem; color: var(--on-wall-accent); font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; }
+  .story-band span { color: var(--on-wall); }
+  .story-table td { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .story-cell { display: block; inline-size: var(--w); block-size: 0.9rem; margin-block-end: 0.25rem; background: var(--c); outline: 1px solid rgb(255 255 255 / 0.35); }
+  .story-none::before { content: "\00b7"; color: var(--on-wall-muted); }
+}
+
 @layer motion {
   :root[data-motion="on"] {
     .frame { transition: translate 0.5s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.5s; }
