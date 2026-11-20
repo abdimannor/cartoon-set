@@ -20,7 +20,7 @@ const moving = () => root.dataset.motion === "on";
 
 const sync = () => {
   button?.setAttribute("aria-pressed", String(moving()));
-  if (notice) notice.hidden = !(saved === null && os.matches && !moving());
+  document.documentElement.dataset.motionUi = (saved === null && os.matches && !moving()) ? "notice" : "switch";
   if (!moving()) { target = [0.5, 0.35]; root.classList.remove("light-on"); paint(); }
 };
 const choose = (value) => {
@@ -39,7 +39,7 @@ addEventListener("pointermove", (event) => {
 
 document.addEventListener("pointerleave", () => root.classList.remove("light-on"));
 os.addEventListener("change", () => { if (saved === null) root.dataset.motion = os.matches ? "off" : "on"; sync(); });
-if (button) { button.hidden = false; button.addEventListener("click", () => choose(moving() ? "off" : "on")); }
+if (button) { button.addEventListener("click", () => choose(moving() ? "off" : "on")); }
 notice?.querySelector("button")?.addEventListener("click", () => { choose("on"); button?.focus(); });
 sync();
 paint();

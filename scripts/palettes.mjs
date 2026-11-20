@@ -1,5 +1,5 @@
-// Regenerates previews/palettes.json from the .ai files, using the same paletteOf()
-// the lightbox runs live. Needs a local static server on the repo root:
+// Regenerates previews/palettes.json ({ file: [{ hex, n }] }, n = colour operations)
+// from the .ai files, using the same paletteOf() the lightbox runs live. Needs a local static server on the repo root:
 //   python3 -m http.server 8760   then   node scripts/palettes.mjs [playwright path]
 import { writeFile } from "node:fs/promises";
 const { chromium } = await import(process.argv[2] || "playwright");

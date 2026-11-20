@@ -18,18 +18,25 @@
   <link rel="stylesheet" href="style.css">
   <script>
     // Motion default: the OS setting, unless the visitor chose with the switch (light.js).
-    try { document.documentElement.dataset.motion = localStorage.getItem("motion") || (matchMedia("(prefers-reduced-motion: reduce)").matches ? "off" : "on"); } catch { document.documentElement.dataset.motion = matchMedia("(prefers-reduced-motion: reduce)").matches ? "off" : "on"; }
+    // Decided before first paint, so the switch and notice never push the gallery down later.
+    (function () {
+      var root = document.documentElement, saved = null;
+      var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      try { saved = localStorage.getItem("motion"); } catch (e) {}
+      root.dataset.motion = saved || (reduce ? "off" : "on");
+      root.dataset.motionUi = (saved === null && reduce) ? "notice" : "switch";
+    })();
   </script>
 </head>
 <body>
   <aside aria-label="Motion">
-  <p class="motion-notice" data-motion-notice hidden>Your system asks for reduced motion, so the gallery light stands still. <button type="button">Play the animations</button></p>
+  <p class="motion-notice" data-motion-notice>Your system asks for reduced motion, so the gallery light stands still. <button type="button">Play the animations</button></p>
   </aside>
   <header>
     <p class="eyebrow">Vector illustrations</p>
     <h1>Cartoon Set</h1>
     <p class="lead">Three flat vector characters drawn in Adobe Illustrator.</p>
-    <button type="button" class="switch" data-motion-toggle aria-pressed="false" hidden><span class="switch-dot" aria-hidden="true"></span>Gallery light</button>
+    <button type="button" class="switch" data-motion-toggle aria-pressed="false"><span class="switch-dot" aria-hidden="true"></span>Gallery light</button>
   </header>
   <main>
     <figure class="card">
@@ -45,6 +52,13 @@
       <figcaption><span class="num">03</span><h2>Cartoon 3</h2><p>A rounder, robot-like figure with a black helmet and visor, a red body with a round green lens on the chest, and arms spread wide.</p><code>Cartoon3.ai</code><div class="palette" data-palette="Cartoon3.ai" role="group" aria-label="Cartoon 3 palette"></div></figcaption>
     </figure>
   </main>
+  <section class="story" aria-labelledby="story-title">
+    <p class="eyebrow">Palettes compared</p>
+    <h2 id="story-title">Colour story</h2>
+    <!-- Draft copy for approval -->
+    <p class="story-lead" data-draft>The three palettes side by side. Near-identical colours are merged, and each bar shows how much of a file's colour work goes to that ink.</p>
+    <div class="story-body" id="story"></div>
+  </section>
   <dialog class="lightbox" id="lightbox" aria-labelledby="lb-title">
     <div class="lb-bar">
       <h2 id="lb-title">Cartoon</h2>
