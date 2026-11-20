@@ -18,18 +18,25 @@
   <link rel="stylesheet" href="style.css">
   <script>
     // Motion default: the OS setting, unless the visitor chose with the switch (light.js).
-    try { document.documentElement.dataset.motion = localStorage.getItem("motion") || (matchMedia("(prefers-reduced-motion: reduce)").matches ? "off" : "on"); } catch { document.documentElement.dataset.motion = matchMedia("(prefers-reduced-motion: reduce)").matches ? "off" : "on"; }
+    // Decided before first paint, so the switch and notice never push the gallery down later.
+    (function () {
+      var root = document.documentElement, saved = null;
+      var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      try { saved = localStorage.getItem("motion"); } catch (e) {}
+      root.dataset.motion = saved || (reduce ? "off" : "on");
+      root.dataset.motionUi = (saved === null && reduce) ? "notice" : "switch";
+    })();
   </script>
 </head>
 <body>
   <aside aria-label="Motion">
-  <p class="motion-notice" data-motion-notice hidden>Your system asks for reduced motion, so the gallery light stands still. <button type="button">Play the animations</button></p>
+  <p class="motion-notice" data-motion-notice>Your system asks for reduced motion, so the gallery light stands still. <button type="button">Play the animations</button></p>
   </aside>
   <header>
     <p class="eyebrow">Vector illustrations</p>
     <h1>Cartoon Set</h1>
     <p class="lead">Three flat vector characters drawn in Adobe Illustrator.</p>
-    <button type="button" class="switch" data-motion-toggle aria-pressed="false" hidden><span class="switch-dot" aria-hidden="true"></span>Gallery light</button>
+    <button type="button" class="switch" data-motion-toggle aria-pressed="false"><span class="switch-dot" aria-hidden="true"></span>Gallery light</button>
   </header>
   <main>
     <figure class="card">

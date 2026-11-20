@@ -320,3 +320,9 @@
   .lb-palette .swatch-all { background: var(--on-wall-accent); border-color: var(--on-wall-accent); color: #1b1b1b; }
   .lb-palette .swatch:focus-visible, .lb-palette .swatch-all:focus-visible { outline-color: var(--on-wall-accent); }
 }
+
+/* Motion UI is shown by the head script's data-motion-ui flag, set before first paint:
+   no JavaScript means no switch, and nothing appears late to shift the layout. */
+[data-motion-toggle], [data-motion-notice] { display: none; }
+html[data-motion-ui] [data-motion-toggle] { display: inline-flex; }
+html[data-motion-ui="notice"] [data-motion-notice] { display: block; }
