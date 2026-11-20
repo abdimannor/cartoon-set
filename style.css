@@ -261,7 +261,8 @@
     font: 600 var(--step--1)/1 var(--sans);
     cursor: pointer;
   }
-  .switch[hidden] { display: none; }
+  /* Keep the switch's space before light.js reveals it, so the prints never jump. */
+  .switch[hidden] { display: inline-flex; visibility: hidden; }
   .switch-dot { inline-size: 0.75em; block-size: 0.75em; border-radius: 50%; border: 2px solid currentColor; }
   .switch[aria-pressed="true"] { background: var(--on-wall-accent); border-color: var(--on-wall-accent); color: #1b1b1b; }
   .switch[aria-pressed="true"] .switch-dot { background: currentColor; box-shadow: 0 0 0.6em rgb(255 236 200 / 0.9); }
