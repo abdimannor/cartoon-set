@@ -30,6 +30,68 @@ const getPage = async (file) => {
   return docs.get(file);
 };
 
+// Palette: the actual colours of the vector file, read from the pdf.js operator list.
+// pdf.js normalises every fill and stroke (RGB, CMYK, grey) to a "#rrggbb" argument.
+export const paletteOf = async (file) => {
+  const page = await getPage(file);
+  const { OPS } = pdfjs;
+  const colorOps = new Set([OPS.setFillRGBColor, OPS.setStrokeRGBColor]);
+  const { fnArray, argsArray } = await page.getOperatorList();
+  const count = new Map();
+  fnArray.forEach((fn, i) => {
+    if (!colorOps.has(fn)) return;
+    const hex = String(argsArray[i][0]).toLowerCase();
+    if (/^#[0-9a-f]{6}$/.test(hex)) count.set(hex, (count.get(hex) || 0) + 1);
+  });
+  return [...count].sort((a, b) => b[1] - a[1]).map(([hex]) => hex);
+};
+
+// Swatch strips. Prints read a precomputed palettes.json (made with paletteOf by
+// scripts/palettes.mjs) so pdf.js still never loads with the page; the lightbox reads
+// the opened file live.
+const status = document.querySelector("#palette-status");
+const lbPalette = document.querySelector("#lb-palette");
+let stored = {};
+const swatches = (target, colors, name) => {
+  target.replaceChildren(...colors.map((hex) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "swatch";
+    b.style.setProperty("--c", hex);
+    b.dataset.copy = hex;
+    b.innerHTML = `<span class="chip" aria-hidden="true"></span><span class="hex">${hex}</span>`;
+    b.setAttribute("aria-label", `Copy ${hex}`);
+    return b;
+  }));
+  if (colors.length) {
+    const all = document.createElement("button");
+    all.type = "button";
+    all.className = "swatch-all";
+    all.dataset.copy = colors.join(" ");
+    all.textContent = "Copy all";
+    all.setAttribute("aria-label", `Copy all ${colors.length} colours of ${name}`);
+    target.append(all);
+  }
+};
+document.addEventListener("click", async (event) => {
+  const b = event.target.closest("[data-copy]");
+  if (!b) return;
+  try {
+    await navigator.clipboard.writeText(b.dataset.copy);
+    status.textContent = `Copied ${b.dataset.copy}`;
+  } catch {
+    status.textContent = `Copy failed. The colour is ${b.dataset.copy}`;
+  }
+  b.classList.add("is-copied");
+  setTimeout(() => b.classList.remove("is-copied"), 1200);
+});
+fetch("previews/palettes.json").then((r) => r.json()).then((data) => {
+  stored = data;
+  document.querySelectorAll("[data-palette]").forEach((el) => {
+    swatches(el, data[el.dataset.palette] || [], el.dataset.palette);
+  });
+}).catch(() => {});
+
 const apply = () => {
   const vw = view.clientWidth, vh = view.clientHeight;
   const w = s.baseW * s.zoom, h = s.baseH * s.zoom;
@@ -100,6 +162,7 @@ const show = async (i) => {
   s.page = null;
   canvas.width = canvas.height = 0;
   preview.src = item.dataset.preview;
+  swatches(lbPalette, stored[item.dataset.art] || [], item.dataset.title);
   await preview.decode().catch(() => {});
   fit();
   try {
@@ -107,6 +170,8 @@ const show = async (i) => {
     if (items[s.i] !== item) return;
     s.page = page;
     render();
+    const colors = await paletteOf(item.dataset.art).catch(() => stored[item.dataset.art] || []);
+    if (items[s.i] === item) swatches(lbPalette, colors, item.dataset.title);
   } catch {
     // The PNG preview stays visible if the vector file cannot load.
   }
