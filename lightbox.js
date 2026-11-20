@@ -32,6 +32,7 @@ const getPage = async (file) => {
 
 // Palette: the actual colours of the vector file, read from the pdf.js operator list.
 // pdf.js normalises every fill and stroke (RGB, CMYK, grey) to a "#rrggbb" argument.
+// Returns [{ hex, n }], most used first; n counts the operations that set the colour.
 export const paletteOf = async (file) => {
   const page = await getPage(file);
   const { OPS } = pdfjs;
@@ -43,7 +44,7 @@ export const paletteOf = async (file) => {
     const hex = String(argsArray[i][0]).toLowerCase();
     if (/^#[0-9a-f]{6}$/.test(hex)) count.set(hex, (count.get(hex) || 0) + 1);
   });
-  return [...count].sort((a, b) => b[1] - a[1]).map(([hex]) => hex);
+  return [...count].sort((a, b) => b[1] - a[1]).map(([hex, n]) => ({ hex, n }));
 };
 
 // Swatch strips. Prints read a precomputed palettes.json (made with paletteOf by
