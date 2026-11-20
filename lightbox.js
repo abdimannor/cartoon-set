@@ -112,6 +112,13 @@ const show = async (i) => {
   }
 };
 
+// Warm pdf.js up on intent (hover or focus), never on page load.
+const warm = () => loadPdfjs().catch(() => { pdfjs = undefined; });
+items.forEach((item) => {
+  item.addEventListener("pointerenter", warm, { once: true });
+  item.addEventListener("focus", warm, { once: true });
+});
+
 items.forEach((item, i) => item.addEventListener("click", () => {
   dialog.showModal();
   show(i);
