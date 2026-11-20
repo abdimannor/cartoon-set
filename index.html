@@ -16,25 +16,33 @@
   <meta name="theme-color" content="#24413f">
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="style.css">
+  <script>
+    // Motion default: the OS setting, unless the visitor chose with the switch (light.js).
+    try { document.documentElement.dataset.motion = localStorage.getItem("motion") || (matchMedia("(prefers-reduced-motion: reduce)").matches ? "off" : "on"); } catch { document.documentElement.dataset.motion = matchMedia("(prefers-reduced-motion: reduce)").matches ? "off" : "on"; }
+  </script>
 </head>
 <body>
+  <aside aria-label="Motion">
+  <p class="motion-notice" data-motion-notice hidden>Your system asks for reduced motion, so the gallery light stands still. <button type="button">Play the animations</button></p>
+  </aside>
   <header>
     <p class="eyebrow">Vector illustrations</p>
     <h1>Cartoon Set</h1>
     <p class="lead">Three flat vector characters drawn in Adobe Illustrator.</p>
+    <button type="button" class="switch" data-motion-toggle aria-pressed="false" hidden><span class="switch-dot" aria-hidden="true"></span>Gallery light</button>
   </header>
   <main>
     <figure class="card">
       <div class="frame"><button class="zoom-open" type="button" data-art="Cartoon1.ai" data-preview="previews/cartoon1.png" data-title="Cartoon 1"><img src="previews/cartoon1.png" alt="Cartoon 1: smiling man in a red sleeveless top carrying a blue case" width="1131" height="1600" loading="eager" decoding="async"></button></div>
-      <figcaption><span class="num">01</span><h2>Cartoon 1</h2><p>A standing man with dark curly hair and a wide open smile, in a red sleeveless top, black trousers and red shoes, holding a blue case in one hand.</p><code>Cartoon1.ai</code></figcaption>
+      <figcaption><span class="num">01</span><h2>Cartoon 1</h2><p>A standing man with dark curly hair and a wide open smile, in a red sleeveless top, black trousers and red shoes, holding a blue case in one hand.</p><code>Cartoon1.ai</code><div class="palette" data-palette="Cartoon1.ai" role="group" aria-label="Cartoon 1 palette"></div></figcaption>
     </figure>
     <figure class="card">
       <div class="frame"><button class="zoom-open" type="button" data-art="Cartoon2.ai" data-preview="previews/cartoon2.png" data-title="Cartoon 2"><img src="previews/cartoon2.png" alt="Cartoon 2: smiling man with braided hair in an all-black outfit" width="1131" height="1600" loading="lazy" decoding="async"></button></div>
-      <figcaption><span class="num">02</span><h2>Cartoon 2</h2><p>A standing man with braided hair and the same wide smile, dressed in black from top to shoes, arms at his sides.</p><code>Cartoon2.ai</code></figcaption>
+      <figcaption><span class="num">02</span><h2>Cartoon 2</h2><p>A standing man with braided hair and the same wide smile, dressed in black from top to shoes, arms at his sides.</p><code>Cartoon2.ai</code><div class="palette" data-palette="Cartoon2.ai" role="group" aria-label="Cartoon 2 palette"></div></figcaption>
     </figure>
     <figure class="card">
       <div class="frame"><button class="zoom-open" type="button" data-art="Cartoon3.ai" data-preview="previews/cartoon3.png" data-title="Cartoon 3"><img src="previews/cartoon3.png" alt="Cartoon 3: round red and black robot-like figure with arms spread" width="1131" height="1600" loading="lazy" decoding="async"></button></div>
-      <figcaption><span class="num">03</span><h2>Cartoon 3</h2><p>A rounder, robot-like figure with a black helmet and visor, a red body with a round green lens on the chest, and arms spread wide.</p><code>Cartoon3.ai</code></figcaption>
+      <figcaption><span class="num">03</span><h2>Cartoon 3</h2><p>A rounder, robot-like figure with a black helmet and visor, a red body with a round green lens on the chest, and arms spread wide.</p><code>Cartoon3.ai</code><div class="palette" data-palette="Cartoon3.ai" role="group" aria-label="Cartoon 3 palette"></div></figcaption>
     </figure>
   </main>
   <dialog class="lightbox" id="lightbox" aria-labelledby="lb-title">
@@ -56,11 +64,10 @@
         <canvas id="lb-canvas"></canvas>
       </div>
     </div>
+    <div class="palette lb-palette" id="lb-palette" role="group" aria-label="Palette of this artwork"></div>
     <p class="lb-hint" id="lb-hint">Scroll or pinch to zoom, drag to pan. Keys: + and - zoom, arrows pan, 0 fits, Esc closes.</p>
   </dialog>
-  <footer>
-    <p>&copy; 2026 Mahad Abdullahi</p>
-  </footer>
+  <p class="visually-hidden" id="palette-status" role="status"></p>
   <script type="module" src="lightbox.js"></script>
   <script type="module" src="light.js"></script>
 </body>
