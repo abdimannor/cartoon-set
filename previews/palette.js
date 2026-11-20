@@ -115,7 +115,7 @@ export const renderPalette = (target, colors, name) => {
     }));
   target.replaceChildren(...chips, tools);
 };
-document.addEventListener("click", (event) => {
+globalThis.document?.addEventListener("click", (event) => {
   if (!event.target.closest("[data-exact-toggle]")) return;
   showExact = !showExact;
   const focusIn = event.target.closest(".palette");
