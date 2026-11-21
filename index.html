@@ -77,9 +77,20 @@
       <div class="lb-art" id="lb-art">
         <img class="lb-preview" id="lb-preview" src="previews/cartoon1.png" alt="" width="1131" height="1600">
         <canvas id="lb-canvas"></canvas>
+        <canvas id="lb-orig" class="lb-orig" hidden></canvas>
       </div>
     </div>
     <div class="palette lb-palette" id="lb-palette" role="group" aria-label="Palette of this artwork"></div>
+    <section class="lb-remix" aria-labelledby="lb-remix-title">
+      <h3 id="lb-remix-title">Remix the palette</h3>
+      <div class="remix-swatches" id="remix-swatches"></div>
+      <div class="remix-tools">
+        <label class="remix-compare"><input type="checkbox" id="remix-compare"> Compare with the original</label>
+        <label class="remix-split">Split <input type="range" id="remix-split" min="0" max="100" value="50" disabled></label>
+        <button type="button" id="remix-reset">Reset</button>
+        <button type="button" id="remix-download">Download as PNG</button>
+      </div>
+    </section>
     <p class="lb-hint" id="lb-hint">Scroll or pinch to zoom, drag to pan. Keys: + and - zoom, arrows pan, 0 fits, Esc closes.</p>
   </dialog>
   <p class="visually-hidden" id="palette-status" role="status"></p>
