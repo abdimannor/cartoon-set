@@ -154,7 +154,7 @@
   .story-name { font: 400 var(--step-1)/1 var(--serif); }
   .story-bar { display: flex; block-size: clamp(2.5rem, 5vw, 4rem); border: 2px solid var(--frame); background: var(--frame); gap: 2px; }
   .story-bar span { background: var(--c); min-inline-size: 3px; }
-  .story-scroll { overflow-x: auto; }
+  .story-scroll { overflow-x: auto; position: relative; }
   .story-table { inline-size: 100%; min-inline-size: 34rem; border-collapse: collapse; font-size: var(--step--1); }
   .story-table th, .story-table td { padding: 0.45rem 0.6rem; text-align: start; border-block-end: 1px solid color-mix(in oklab, var(--on-wall) 18%, transparent); }
   .story-table thead th { font: 400 var(--step-1)/1 var(--serif); }
