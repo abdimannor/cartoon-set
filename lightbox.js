@@ -12,6 +12,10 @@ const level = document.querySelector("#lb-level");
 const items = [...document.querySelectorAll(".zoom-open")];
 
 const MIN = 1, MAX = 12, MAX_PIXELS = 16_000_000;
+const origCanvas = document.querySelector("#lb-orig");
+const swatchBox = document.querySelector("#remix-swatches");
+const compare = document.querySelector("#remix-compare");
+const split = document.querySelector("#remix-split");
 const s = { i: 0, zoom: 1, x: 0, y: 0, baseW: 1, baseH: 1, page: null, task: null, timer: 0 };
 const docs = new Map();
 let pdfjs;
@@ -90,6 +94,33 @@ const apply = () => {
   view.classList.toggle("is-zoomed", s.zoom > 1.01);
 };
 
+// Remix: a colour map applied while pdf.js paints. pdf.js hands every fill and stroke
+// colour to the 2D context as "#rrggbb", so an own fillStyle/strokeStyle accessor on
+// the render context swaps mapped colours before they reach the canvas. The vectors are
+// re-rendered, not the pixels, so edges and anti-aliasing stay true.
+const remix = new Map();
+const proto = CanvasRenderingContext2D.prototype;
+const mapped = (ctx) => {
+  for (const key of ["fillStyle", "strokeStyle"]) {
+    const d = Object.getOwnPropertyDescriptor(proto, key);
+    Object.defineProperty(ctx, key, {
+      configurable: true,
+      get() { return d.get.call(this); },
+      set(v) { d.set.call(this, typeof v === "string" && remix.has(v.toLowerCase()) ? remix.get(v.toLowerCase()) : v); },
+    });
+  }
+  return ctx;
+};
+const renderTo = (page, scale, withMap) => {
+  const viewport = page.getViewport({ scale });
+  const off = document.createElement("canvas");
+  off.width = Math.floor(viewport.width);
+  off.height = Math.floor(viewport.height);
+  const ctx = off.getContext("2d");
+  const task = page.render({ canvas: off, canvasContext: withMap ? mapped(ctx) : ctx, viewport, background: "#fff" });
+  return { off, task };
+};
+
 const render = async () => {
   if (!s.page) return;
   const page = s.page;
@@ -97,21 +128,28 @@ const render = async () => {
   let scale = (s.baseW / unit.width) * s.zoom * (devicePixelRatio || 1);
   const area = unit.width * unit.height * scale * scale;
   if (area > MAX_PIXELS) scale *= Math.sqrt(MAX_PIXELS / area);
-  const viewport = page.getViewport({ scale });
-  const off = document.createElement("canvas");
-  off.width = Math.floor(viewport.width);
-  off.height = Math.floor(viewport.height);
   s.task?.cancel();
-  s.task = page.render({ canvas: off, canvasContext: off.getContext("2d"), viewport, background: "#fff" });
+  s.origTask?.cancel();
+  const main = renderTo(page, scale, remix.size > 0);
+  s.task = main.task;
+  const comparing = compare.checked && remix.size > 0;
+  const orig = comparing ? renderTo(page, scale, false) : null;
+  s.origTask = orig?.task;
   try {
-    await s.task.promise;
+    await Promise.all([main.task.promise, orig?.task.promise]);
   } catch {
     return;
   }
   if (page !== s.page) return;
-  canvas.width = off.width;
-  canvas.height = off.height;
-  canvas.getContext("2d").drawImage(off, 0, 0);
+  canvas.width = main.off.width;
+  canvas.height = main.off.height;
+  canvas.getContext("2d").drawImage(main.off, 0, 0);
+  origCanvas.hidden = !orig;
+  if (orig) {
+    origCanvas.width = orig.off.width;
+    origCanvas.height = orig.off.height;
+    origCanvas.getContext("2d").drawImage(orig.off, 0, 0);
+  }
   art.classList.add("is-vector");
 };
 
@@ -146,6 +184,9 @@ const show = async (i) => {
   art.classList.remove("is-vector");
   s.page = null;
   canvas.width = canvas.height = 0;
+  remix.clear();
+  swatchBox.replaceChildren();
+  origCanvas.hidden = true;
   preview.src = item.dataset.preview;
   renderPalette(lbPalette, stored[item.dataset.art] || [], item.dataset.title);
   await preview.decode().catch(() => {});
@@ -156,7 +197,10 @@ const show = async (i) => {
     s.page = page;
     render();
     const colors = await paletteOf(item.dataset.art).catch(() => stored[item.dataset.art] || []);
-    if (items[s.i] === item) renderPalette(lbPalette, colors, item.dataset.title);
+    if (items[s.i] === item) {
+      renderPalette(lbPalette, colors, item.dataset.title);
+      buildRemix(colors);
+    }
   } catch {
     // The PNG preview stays visible if the vector file cannot load.
   }
@@ -240,3 +284,60 @@ view.addEventListener("keydown", (event) => {
 });
 
 addEventListener("resize", () => dialog.open && fit());
+
+// Remix controls: one colour input per ink (most used first), a reset, a compare split
+// and a PNG download rendered from the vectors at print-friendly size.
+const REMIX_MAX = 12;
+const buildRemix = (colors) => {
+  swatchBox.replaceChildren(...colors.slice(0, REMIX_MAX).map(({ hex }) => {
+    const label = document.createElement("label");
+    label.className = "remix-swatch";
+    const input = document.createElement("input");
+    input.type = "color";
+    input.value = hex;
+    input.dataset.from = hex;
+    const text = document.createElement("span");
+    text.className = "visually-hidden";
+    text.textContent = `Replace ${hex}`;
+    label.append(input, text);
+    return label;
+  }));
+};
+swatchBox.addEventListener("input", (event) => {
+  const input = event.target.closest("input[data-from]");
+  if (!input) return;
+  if (input.value.toLowerCase() === input.dataset.from) remix.delete(input.dataset.from);
+  else remix.set(input.dataset.from, input.value.toLowerCase());
+  input.parentElement.classList.toggle("is-changed", remix.has(input.dataset.from));
+  scheduleRender();
+});
+const setSplit = () => art.style.setProperty("--split", `${split.value}%`);
+compare.addEventListener("change", () => {
+  split.disabled = !compare.checked;
+  art.classList.toggle("is-comparing", compare.checked);
+  setSplit();
+  render();
+});
+split.addEventListener("input", setSplit);
+document.querySelector("#remix-reset").addEventListener("click", () => {
+  remix.clear();
+  swatchBox.querySelectorAll("input[data-from]").forEach((input) => {
+    input.value = input.dataset.from;
+    input.parentElement.classList.remove("is-changed");
+  });
+  render();
+});
+document.querySelector("#remix-download").addEventListener("click", async () => {
+  if (!s.page) return;
+  const unit = s.page.getViewport({ scale: 1 });
+  const scale = Math.sqrt(8_000_000 / (unit.width * unit.height));
+  const { off, task } = renderTo(s.page, scale, remix.size > 0);
+  try { await task.promise; } catch { return; }
+  off.toBlob((blob) => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${items[s.i].dataset.art.replace(/\.ai$/, "")}${remix.size ? "-remix" : ""}.png`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }, "image/png");
+});
