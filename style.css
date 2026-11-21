@@ -265,51 +265,21 @@
   }
 }
 
-/* Motion switch and the reduced-motion notice */
+/* Motion button: a quiet icon control */
 @layer components {
-  .switch {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.55em;
+  .quiet-control {
+    display: inline-grid; place-items: center;
+    inline-size: 34px; block-size: 34px; padding: 0;
     margin-block-start: var(--space-s);
-    padding: 0.5em 1.1em;
-    border: 1px solid color-mix(in oklab, var(--on-wall) 45%, transparent);
-    border-radius: 999px;
-    background: transparent;
-    color: var(--on-wall);
-    font: 600 var(--step--1)/1 var(--sans);
-    cursor: pointer;
+    border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+    border-radius: 999px; background: transparent; color: var(--on-wall); cursor: pointer;
+    transition: background-color 150ms;
   }
-  /* Keep the switch's space before light.js reveals it, so the prints never jump. */
-  .switch[hidden] { display: inline-flex; visibility: hidden; }
-  .switch-dot { inline-size: 0.75em; block-size: 0.75em; border-radius: 50%; border: 2px solid currentColor; }
-  .switch[aria-pressed="true"] { background: var(--on-wall-accent); border-color: var(--on-wall-accent); color: #1b1b1b; }
-  .switch[aria-pressed="true"] .switch-dot { background: currentColor; box-shadow: 0 0 0.6em rgb(255 236 200 / 0.9); }
-  .switch:focus-visible, .motion-notice button:focus-visible { outline: 3px solid var(--on-wall-accent); outline-offset: 2px; }
-  .motion-notice {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 0.4rem 1rem;
-    padding: 0.7rem var(--gutter);
-    background: #0f1d1c;
-    color: var(--on-wall);
-    font-size: var(--step--1);
-    text-align: center;
-  }
-  .motion-notice[hidden] { display: none; }
-  .motion-notice button {
-    padding: 0.4em 1em;
-    border: 0;
-    border-radius: 999px;
-    background: var(--on-wall-accent);
-    color: #1b1b1b;
-    font: 700 var(--step--1)/1 var(--sans);
-    cursor: pointer;
-  }
+  .quiet-control:is(:hover, :focus-visible) { background: color-mix(in srgb, currentColor 10%, transparent); }
+  .quiet-control:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+  .quiet-control svg { inline-size: 18px; block-size: 18px; }
+  .quiet-control[aria-pressed="true"] .icon-play,
+  .quiet-control[aria-pressed="false"] .icon-pause { display: none; }
 }
 
 /* Palette strips: the colours read from each vector file */
@@ -340,8 +310,7 @@
   .lb-palette .swatch:focus-visible, .lb-palette .swatch-all:focus-visible { outline-color: var(--on-wall-accent); }
 }
 
-/* Motion UI is shown by the head script's data-motion-ui flag, set before first paint:
-   no JavaScript means no switch, and nothing appears late to shift the layout. */
-[data-motion-toggle], [data-motion-notice] { display: none; }
-html[data-motion-ui] [data-motion-toggle] { display: inline-flex; }
-html[data-motion-ui="notice"] [data-motion-notice] { display: block; }
+/* The motion button needs light.js; the head script marks <html data-motion> before
+   first paint, so without JavaScript there is no button and nothing appears late. */
+[data-motion-toggle] { display: none; }
+html[data-motion] [data-motion-toggle] { display: inline-grid; }
