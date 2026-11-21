@@ -11,8 +11,8 @@ module.exports = defineConfig({
   use: { baseURL: 'http://127.0.0.1:8745/', trace: 'retain-on-failure' },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] }, testMatch: /cross-browser\.spec\.js/ },
-    { name: 'webkit', use: { ...devices['Desktop Safari'] }, testMatch: /cross-browser\.spec\.js/ },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
   ],
   webServer: {
     command: 'python3 -m http.server 8745 --bind 127.0.0.1',
