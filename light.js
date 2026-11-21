@@ -1,11 +1,9 @@
 // Gallery light: a warm spot follows the cursor across the wall via CSS custom properties.
-// The OS reduced-motion setting is the default; the visible switch overrides it, and the
-// choice is kept in localStorage and on <html data-motion> (set before paint in <head>).
+// Motion is on by default; the motion button turns it off, and the choice is kept in
+// localStorage and on <html data-motion> (set before paint in <head>).
 // With motion off the light stays parked above the middle print.
 const root = document.documentElement;
-const os = matchMedia("(prefers-reduced-motion: reduce)");
 const button = document.querySelector("[data-motion-toggle]");
-const notice = document.querySelector("[data-motion-notice]");
 let saved = null;
 try { saved = localStorage.getItem("motion"); } catch {}
 let frame = 0;
@@ -19,8 +17,10 @@ const paint = () => {
 const moving = () => root.dataset.motion === "on";
 
 const sync = () => {
+  const label = moving() ? "Pause motion" : "Play motion";
   button?.setAttribute("aria-pressed", String(moving()));
-  document.documentElement.dataset.motionUi = (saved === null && os.matches && !moving()) ? "notice" : "switch";
+  button?.setAttribute("aria-label", label);
+  if (button) button.title = label;
   if (!moving()) { target = [0.5, 0.35]; root.classList.remove("light-on"); paint(); }
 };
 const choose = (value) => {
@@ -38,8 +38,6 @@ addEventListener("pointermove", (event) => {
 }, { passive: true });
 
 document.addEventListener("pointerleave", () => root.classList.remove("light-on"));
-os.addEventListener("change", () => { if (saved === null) root.dataset.motion = os.matches ? "off" : "on"; sync(); });
 if (button) { button.addEventListener("click", () => choose(moving() ? "off" : "on")); }
-notice?.querySelector("button")?.addEventListener("click", () => { choose("on"); button?.focus(); });
 sync();
 paint();
